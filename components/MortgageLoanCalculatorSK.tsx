@@ -168,16 +168,17 @@ export default function MortgageLoanCalculatorSK() {
 
   return (
     <div className="mx-auto max-w-5xl p-3 sm:p-4 md:p-8 space-y-4 sm:space-y-6">
-      <div className="flex items-center gap-3">
+      <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
         <h1 className="text-2xl sm:text-3xl font-bold leading-tight">Kalkulátor hypotéky & úveru (SK)</h1>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Info className="h-4 w-4" />
+        <div className="flex items-start gap-2 text-xs sm:text-sm text-muted-foreground max-w-xs sm:max-w-md">
+          <Info className="h-4 w-4 mt-1 hidden sm:block" />
           <span>Vyber banku alebo používaj vlastnú sadzbu. Posuvníky sú rýchlejšie, polia sa pri kliku vyprázdnia.</span>
         </div>
       </div>
+      </div>
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as any)} className="w-full">
-        <TabsList className="grid grid-cols-2 w-full text-sm sm:text-base">
+        <TabsList className="grid grid-cols-2 w-full text-xs sm:text-sm">
           <TabsTrigger value="hypo">Hypotekárny úver</TabsTrigger>
           <TabsTrigger value="nehypo">Nehypotekárny (spotrebný) úver</TabsTrigger>
         </TabsList>
