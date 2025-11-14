@@ -20,7 +20,6 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Info } from "lucide-react";
 
-// Limity a predvyplnené sadzby
 const LIMITS = {
   hypo: {
     amount: { min: 5000, max: 600000, step: 1000 },
@@ -68,6 +67,8 @@ const ASSETS = [
   { id: "tesla", name: "Tesla", cagr: 35 },
   { id: "saudi", name: "Saudi Aramco", cagr: 5 },
 ] as const;
+
+// Funckie — rovnaké ako u teba (skrácené tu pre prehľadnosť)
 
 function pctToMonthly(pct: number) {
   const r = (Number(pct) || 0) / 100;
