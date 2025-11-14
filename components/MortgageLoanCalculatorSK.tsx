@@ -227,14 +227,14 @@ export default function MortgageLoanCalculatorSK() {
   }, [validatedAmount, validatedYears, totalPaid]);
 
   return (
-    <div className="mx-auto max-w-5xl p-3 sm:p-4 md:p-8 space-y-4 sm:space-y-6">
+    <div className="mx-2 sm:mx-auto max-w-5xl p-3 sm:p-4 md:p-8 space-y-6">
       <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-        <h1 className="text-2xl sm:text-3xl font-bold leading-tight">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold leading-tight">
           Kalkulátor hypotéky & úveru (SK)
         </h1>
         <div className="flex items-start gap-2 text-xs sm:text-sm text-muted-foreground max-w-xs sm:max-w-md">
           <Info className="h-4 w-4 mt-1 hidden sm:block" />
-          <span>
+          <span className="whitespace-normal">
             Vyber banku alebo používaj vlastnú sadzbu. Posuvníky sú
             rýchlejšie, polia sa pri kliku vyprázdnia.
           </span>
@@ -242,7 +242,7 @@ export default function MortgageLoanCalculatorSK() {
       </div>
 
       <Tabs value={tab} onValueChange={setTab} className="w-full">
-        <TabsList className="grid grid-cols-2 w-full text-xs sm:text-sm">
+        <TabsList className="grid grid-cols-1 sm:grid-cols-2 w-full text-xs sm:text-sm">
           <TabsTrigger value="hypo">
             Hypotekárny úver
           </TabsTrigger>
@@ -318,16 +318,16 @@ export default function MortgageLoanCalculatorSK() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="grid gap-2">
-              <Label>Aktívum</Label>
+              <Label className="whitespace-normal">Aktívum</Label>
               <Select
                 value={assetId}
                 onValueChange={(v) =>
                   setAssetId(v as (typeof ASSETS)[number]["id"])
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -341,23 +341,24 @@ export default function MortgageLoanCalculatorSK() {
             </div>
 
             <div className="grid gap-2">
-              <Label>Očak. výnos p.a. (CAGR)</Label>
+              <Label className="whitespace-normal">Očak. výnos p.a. (CAGR)</Label>
               <EditableNumber
                 value={assetReturnPct}
                 onChangeNumber={setAssetReturnPct}
                 clearOnFocus
+                inputClassName="h-11 text-base px-3 py-2"
               />
             </div>
 
             <div className="grid gap-2">
-              <Label>Break-even CAGR</Label>
-              <div className="rounded-2xl bg-muted/30 p-3 text-lg font-semibold">
+              <Label className="whitespace-normal">Break-even CAGR</Label>
+              <div className="rounded-2xl bg-muted/30 p-3 text-lg font-semibold break-words">
                 {fmtPct(breakEvenCAGR)}
               </div>
             </div>
           </div>
 
-          <div className="grid md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 overflow-x-auto">
             <Stat
               label="Istina investovaná"
               value={fmtMoney(validatedAmount)}
@@ -388,7 +389,7 @@ export default function MortgageLoanCalculatorSK() {
           <CardTitle>Metodika pre infláciu</CardTitle>
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground space-y-2">
-          <p>
+          <p className="whitespace-normal">
             Reálne hodnoty rátame pomocou Fisherovej aproximácie na
             mesačnej báze a diskontujeme PV splátok.
           </p>
@@ -456,11 +457,11 @@ function CalculatorCard({
       <CardHeader>
         <CardTitle>{title}</CardTitle>
       </CardHeader>
-      <CardContent className="grid md:grid-cols-2 gap-4 sm:gap-6">
-        <div className="space-y-4 sm:space-y-6">
+      <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+        <div className="space-y-6 sm:space-y-6">
           {/* Výška úveru – slider + input */}
           <div className="grid gap-2">
-            <Label>Výška úveru</Label>
+            <Label className="whitespace-normal">Výška úveru</Label>
             <input
               type="range"
               className="w-full h-8 touch-none"
@@ -472,7 +473,7 @@ function CalculatorCard({
             />
             <EditableNumber
               value={amount}
-              inputClassName="h-11 text-base"
+              inputClassName="h-11 text-base px-3 py-2"
               onChangeNumber={(v) =>
                 setAmount(
                   Math.min(
@@ -488,7 +489,7 @@ function CalculatorCard({
 
           {/* Splatnosť v rokoch – slider + input */}
           <div className="grid gap-2">
-            <Label>Splatnosť v rokoch</Label>
+            <Label className="whitespace-normal">Splatnosť v rokoch</Label>
             <input
               type="range"
               className="w-full h-8 touch-none"
@@ -500,7 +501,7 @@ function CalculatorCard({
             />
             <EditableNumber
               value={years}
-              inputClassName="h-11 text-base"
+              inputClassName="h-11 text-base px-3 py-2"
               onChangeNumber={(v) =>
                 setYears(
                   Math.min(
@@ -514,19 +515,19 @@ function CalculatorCard({
           </div>
 
           <div className="grid gap-2">
-            <Label>Inflácia p.a. (%)</Label>
+            <Label className="whitespace-normal">Inflácia p.a. (%)</Label>
             <EditableNumber
               value={inflationPct}
               onChangeNumber={setInflationPct}
               clearOnFocus
-              inputClassName="h-11 text-base"
+              inputClassName="h-11 text-base px-3 py-2"
             />
           </div>
 
           <div className="grid gap-2">
-            <Label>Vyberte banku (voliteľné)</Label>
+            <Label className="whitespace-normal">Vyberte banku (voliteľné)</Label>
             <Select value={selectedBank} onValueChange={onSelectBank}>
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="— Bez výberu —" />
               </SelectTrigger>
               <SelectContent>
@@ -541,107 +542,82 @@ function CalculatorCard({
 
           {selectedBank && (
             <div className="grid gap-2">
-              <Label>
+              <Label className="whitespace-normal">
                 Úrok banky p.a. (%) –{" "}
                 {bankList.find((b) => b.id === selectedBank)?.name}
               </Label>
               <EditableNumber
                 value={
-                  bankList.find((b) => b.id === selectedBank)?.rate ??
-                  0
+                  bankList.find((b) => b.id === selectedBank)?.rate ?? 0
                 }
                 onChangeNumber={(v) =>
                   onBankRateChange(selectedBank, String(v))
                 }
                 clearOnFocus
-                inputClassName="h-11 text-base"
+                inputClassName="h-11 text-base px-3 py-2"
               />
             </div>
           )}
 
-          <div className="flex items-center justify-between rounded-2xl border p-3">
-            <div className="space-y-1">
-              <Label>Vlastná sadzba p.a. (%)</Label>
+          <div className="flex flex-wrap items-center justify-between rounded-2xl border p-3 gap-2">
+            <div className="space-y-1 flex-grow min-w-[150px]">
+              <Label className="whitespace-normal">Vlastná sadzba p.a. (%)</Label>
               <EditableNumber
                 value={customRate}
                 onChangeNumber={setCustomRate}
                 clearOnFocus
-                inputClassName="h-11 text-base"
+                inputClassName="h-11 text-base px-3 py-2"
               />
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 min-w-[150px]">
               <Switch
                 checked={useCustomRate}
                 onCheckedChange={setUseCustomRate}
                 id="customRateSwitch"
               />
-              <Label htmlFor="customRateSwitch">
+              <Label htmlFor="customRateSwitch" className="whitespace-normal cursor-pointer">
                 Použiť vlastnú sadzbu
               </Label>
             </div>
           </div>
         </div>
 
-        <div className="space-y-4">
-          <Card className="border-dashed">
+        <div className="space-y-6">
+          <Card className="border-dashed overflow-x-auto">
             <CardHeader>
-              <CardTitle className="text-lg">
-                Výsledky (nominálne)
-              </CardTitle>
+              <CardTitle className="text-lg">Výsledky (nominálne)</CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-3 sm:gap-4">
-              <Stat
-                label="Mesačná splátka"
-                value={fmtMoney(monthly)}
-              />
+            <CardContent className="grid grid-cols-2 gap-3 sm:gap-4 min-w-[300px]">
+              <Stat label="Mesačná splátka" value={fmtMoney(monthly)} />
               <Stat
                 label="Nominálna sadzba"
                 value={fmtPct(
                   useCustomRate
                     ? customRate
-                    : bankList.find(
-                        (b) => b.id === selectedBank
-                      )?.rate || 0
+                    : bankList.find((b) => b.id === selectedBank)?.rate || 0
                 )}
               />
-              <Stat
-                label="Zaplatené spolu"
-                value={fmtMoney(totalPaid)}
-              />
-              <Stat
-                label="Preplatok (úroky)"
-                value={fmtMoney(totalInterest)}
-              />
+              <Stat label="Zaplatené spolu" value={fmtMoney(totalPaid)} />
+              <Stat label="Preplatok (úroky)" value={fmtMoney(totalInterest)} />
             </CardContent>
           </Card>
 
-          <Card className="border-dashed">
+          <Card className="border-dashed overflow-x-auto">
             <CardHeader>
-              <CardTitle className="text-lg">
-                Reálne (po započítaní inflácie)
-              </CardTitle>
+              <CardTitle className="text-lg">Reálne (po započítaní inflácie)</CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-3 sm:gap-4">
+            <CardContent className="grid grid-cols-2 gap-3 sm:gap-4 min-w-[300px]">
               <Stat
                 label="Reálna mesačná miera"
                 value={`${(rRealMonthly * 100).toFixed(3)}%/mes.`}
               />
-              <Stat
-                label="PV splátok (dnešné €)"
-                value={fmtMoney(pvOfPayments)}
-              />
-              <Stat
-                label="Reálny preplatok"
-                value={fmtMoney(realOverpayment)}
-              />
-              <Stat
-                label="Inflácia p.a."
-                value={fmtPct(inflationPct)}
-              />
+              <Stat label="PV splátok (dnešné €)" value={fmtMoney(pvOfPayments)} />
+              <Stat label="Reálny preplatok" value={fmtMoney(realOverpayment)} />
+              <Stat label="Inflácia p.a." value={fmtPct(inflationPct)} />
             </CardContent>
           </Card>
 
-          <div className="text-xs text-muted-foreground">
+          <div className="text-xs text-muted-foreground whitespace-normal">
             * Pri bezúčelovom úvere je výška limitovaná na 40 000 € a
             splatnosť na 8 rokov.
           </div>
@@ -674,9 +650,9 @@ function EditableNumber({
   }, [value]);
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 w-full">
       <Input
-        className={`${inputClassName} text-base sm:text-lg`}
+        className={`${inputClassName} text-base sm:text-lg px-3 py-2`}
         value={txt}
         onFocus={(e) => {
           if (clearOnFocus) {
@@ -724,11 +700,9 @@ type StatProps = {
 
 function Stat({ label, value }: StatProps) {
   return (
-    <div className="rounded-2xl bg-muted/30 p-3">
-      <div className="text-xs text-muted-foreground">{label}</div>
-      <div className="text-base sm:text-lg font-semibold">
-        {value}
-      </div>
+    <div className="rounded-2xl bg-muted/30 p-3 break-words min-w-[120px]">
+      <div className="text-xs text-muted-foreground whitespace-normal">{label}</div>
+      <div className="text-base sm:text-lg font-semibold">{value}</div>
     </div>
   );
 }
