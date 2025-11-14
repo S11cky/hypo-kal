@@ -22,8 +22,8 @@ const LIMITS = {
     years: { min: 1, max: 40, step: 1 },
   },
   nehypotekarny: {
-    amount: { min: 500, max: 40000, step: 100 }, // max 40k
-    years: { min: 1, max: 8, step: 1 }, // max 8 rokov
+    amount: { min: 500, max: 40000, step: 100 },
+    years: { min: 1, max: 8, step: 1 },
   },
 } as const;
 
@@ -50,7 +50,6 @@ const DEMO_BANKS = {
   ],
 };
 
-// Akciový trh – 10 najväčších + index. Hodnoty CAGR za 10Y sú ilustračné.
 const ASSETS = [
   { id: "sp500", name: "S&P 500 (TR)", cagr: 10 },
   { id: "apple", name: "Apple", cagr: 24 },
@@ -119,15 +118,11 @@ export default function MortgageLoanCalculatorSK() {
   const [customRate, setCustomRate] = useState(3.5);
   const [useCustomRate, setUseCustomRate] = useState(true);
 
-  // Investičná sekcia
-  const [assetId, setAssetId] =
-    useState<(typeof ASSETS)[number]["id"]>("sp500");
+  const [assetId, setAssetId] = useState<typeof ASSETS[number]["id"]>("sp500");
   const defaultAsset = ASSETS.find((a) => a.id === assetId)!;
-  const [assetReturnPct, setAssetReturnPct] =
-    useState<number>(defaultAsset.cagr);
+  const [assetReturnPct, setAssetReturnPct] = useState<number>(defaultAsset.cagr);
 
   React.useEffect(() => {
-    // pri zmene assetu zober default cagr
     setAssetReturnPct(ASSETS.find((a) => a.id === assetId)?.cagr ?? 8);
   }, [assetId]);
 
@@ -135,15 +130,8 @@ export default function MortgageLoanCalculatorSK() {
   const A_LIMIT = LIMITS[loanType].amount;
   const Y_LIMIT = LIMITS[loanType].years;
 
-  // validácia podľa typu úveru
-  const validatedAmount = Math.min(
-    Math.max(amount, A_LIMIT.min),
-    A_LIMIT.max
-  );
-  const validatedYears = Math.min(
-    Math.max(years, Y_LIMIT.min),
-    Y_LIMIT.max
-  );
+  const validatedAmount = Math.min(Math.max(amount, A_LIMIT.min), A_LIMIT.max);
+  const validatedYears = Math.min(Math.max(years, Y_LIMIT.min), Y_LIMIT.max);
 
   const months = useMemo(
     () => Math.max(1, Math.round((Number(validatedYears) || 0) * 12)),
@@ -155,9 +143,7 @@ export default function MortgageLoanCalculatorSK() {
 
   const onSelectBank = (val: string) => {
     setSelectedBank(val);
-    const r = bankList.find((b) => b.id === val)?.rate as
-      | number
-      | undefined;
+    const r = bankList.find((b) => b.id === val)?.rate as number | undefined;
     if (typeof r === "number" && !isNaN(r)) {
       setUseCustomRate(false);
       setCustomRate(r);
@@ -169,18 +155,10 @@ export default function MortgageLoanCalculatorSK() {
     : Number(selectedBankObj?.rate) || 0;
 
   const monthly = useMemo(
-    () =>
-      annuityPayment(
-        Number(validatedAmount) || 0,
-        effectiveRate,
-        months
-      ),
+    () => annuityPayment(Number(validatedAmount) || 0, effectiveRate, months),
     [validatedAmount, effectiveRate, months]
   );
-  const totalPaid = useMemo(
-    () => monthly * months,
-    [monthly, months]
-  );
+  const totalPaid = useMemo(() => monthly * months, [monthly, months]);
   const totalInterest = useMemo(
     () => totalPaid - (Number(validatedAmount) || 0),
     [totalPaid, validatedAmount]
@@ -208,19 +186,14 @@ export default function MortgageLoanCalculatorSK() {
     }));
   };
 
-  // Investičný výpočet – investujem celú istinu hneď na začiatku
   const investFV = useMemo(
     () => fvLumpSum(validatedAmount, assetReturnPct, validatedYears),
     [validatedAmount, assetReturnPct, validatedYears]
   );
-  const investNet = useMemo(
-    () => investFV - totalPaid,
-    [investFV, totalPaid]
-  );
+  const investNet = useMemo(() => investFV - totalPaid, [investFV, totalPaid]);
   const breakEvenCAGR = useMemo(() => {
     if (validatedAmount > 0 && validatedYears > 0) {
-      const r =
-        Math.pow(totalPaid / validatedAmount, 1 / validatedYears) - 1;
+      const r = Math.pow(totalPaid / validatedAmount, 1 / validatedYears) - 1;
       return r * 100;
     }
     return 0;
@@ -242,14 +215,22 @@ export default function MortgageLoanCalculatorSK() {
       </div>
 
       <Tabs value={tab} onValueChange={setTab} className="w-full">
-        <TabsList className="grid grid-cols-1 sm:grid-cols-2 w-full text-xs sm:text-sm">
-          <TabsTrigger value="hypo">
+        {/* TOTO JE OPRAVENÁ ČASŤ */}
+        <TabsList className="grid grid-cols-1 gap-2 sm:grid-cols-2 w-full mt-4">
+          <TabsTrigger
+            value="hypo"
+            className="py-3 px-4 rounded-xl w-full font-semibold min-h-[48px] text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-primary/60 data-[state=active]:bg-primary/10"
+          >
             Hypotekárny úver
           </TabsTrigger>
-          <TabsTrigger value="nehypo">
+          <TabsTrigger
+            value="nehypo"
+            className="py-3 px-4 rounded-xl w-full font-semibold min-h-[48px] text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-primary/60 data-[state=active]:bg-primary/10"
+          >
             Nehypotekárny (spotrebný) úver
           </TabsTrigger>
         </TabsList>
+        {/* KONIEC OPRAVENEJ ČASTI */}
 
         <TabsContent value="hypo">
           <CalculatorCard
@@ -399,6 +380,8 @@ export default function MortgageLoanCalculatorSK() {
   );
 }
 
+// Zvyšok komponentov ostáva identický ako v predchádzajúcom optimálnom kóde:
+
 type CalculatorCardProps = {
   title: string;
   amount: number;
@@ -457,9 +440,10 @@ function CalculatorCard({
       <CardHeader>
         <CardTitle>{title}</CardTitle>
       </CardHeader>
+
       <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         <div className="space-y-6 sm:space-y-6">
-          {/* Výška úveru – slider + input */}
+          {/* Výška úveru */}
           <div className="grid gap-2">
             <Label className="whitespace-normal">Výška úveru</Label>
             <input
@@ -486,8 +470,7 @@ function CalculatorCard({
               clearOnFocus
             />
           </div>
-
-          {/* Splatnosť v rokoch – slider + input */}
+          {/* Splatnosť v rokoch */}
           <div className="grid gap-2">
             <Label className="whitespace-normal">Splatnosť v rokoch</Label>
             <input
@@ -513,7 +496,6 @@ function CalculatorCard({
               clearOnFocus
             />
           </div>
-
           <div className="grid gap-2">
             <Label className="whitespace-normal">Inflácia p.a. (%)</Label>
             <EditableNumber
@@ -523,7 +505,6 @@ function CalculatorCard({
               inputClassName="h-11 text-base px-3 py-2"
             />
           </div>
-
           <div className="grid gap-2">
             <Label className="whitespace-normal">Vyberte banku (voliteľné)</Label>
             <Select value={selectedBank} onValueChange={onSelectBank}>
@@ -539,7 +520,6 @@ function CalculatorCard({
               </SelectContent>
             </Select>
           </div>
-
           {selectedBank && (
             <div className="grid gap-2">
               <Label className="whitespace-normal">
@@ -558,10 +538,11 @@ function CalculatorCard({
               />
             </div>
           )}
-
           <div className="flex flex-wrap items-center justify-between rounded-2xl border p-3 gap-2">
             <div className="space-y-1 flex-grow min-w-[150px]">
-              <Label className="whitespace-normal">Vlastná sadzba p.a. (%)</Label>
+              <Label className="whitespace-normal">
+                Vlastná sadzba p.a. (%)
+              </Label>
               <EditableNumber
                 value={customRate}
                 onChangeNumber={setCustomRate}
@@ -575,13 +556,15 @@ function CalculatorCard({
                 onCheckedChange={setUseCustomRate}
                 id="customRateSwitch"
               />
-              <Label htmlFor="customRateSwitch" className="whitespace-normal cursor-pointer">
+              <Label
+                htmlFor="customRateSwitch"
+                className="whitespace-normal cursor-pointer"
+              >
                 Použiť vlastnú sadzbu
               </Label>
             </div>
           </div>
         </div>
-
         <div className="space-y-6">
           <Card className="border-dashed overflow-x-auto">
             <CardHeader>
@@ -601,7 +584,6 @@ function CalculatorCard({
               <Stat label="Preplatok (úroky)" value={fmtMoney(totalInterest)} />
             </CardContent>
           </Card>
-
           <Card className="border-dashed overflow-x-auto">
             <CardHeader>
               <CardTitle className="text-lg">Reálne (po započítaní inflácie)</CardTitle>
@@ -616,10 +598,8 @@ function CalculatorCard({
               <Stat label="Inflácia p.a." value={fmtPct(inflationPct)} />
             </CardContent>
           </Card>
-
           <div className="text-xs text-muted-foreground whitespace-normal">
-            * Pri bezúčelovom úvere je výška limitovaná na 40 000 € a
-            splatnosť na 8 rokov.
+            * Pri bezúčelovom úvere je výška limitovaná na 40 000 € a splatnosť na 8 rokov.
           </div>
         </div>
       </CardContent>
@@ -627,7 +607,6 @@ function CalculatorCard({
   );
 }
 
-// Pomocný komponent na "user-friendly" čísla:
 type EditableNumberProps = {
   value: number;
   onChangeNumber: (v: number) => void;
@@ -665,25 +644,17 @@ function EditableNumber({
           const v = e.target.value;
           setTxt(v);
           const num = Number(
-            v
-              .replace(/\s+/g, "")
-              .replace(/€/g, "")
-              .replace(",", ".")
+            v.replace(/\s+/g, "").replace(/€/g, "").replace(",", ".")
           );
           if (!Number.isNaN(num)) onChangeNumber(num);
         }}
         onBlur={() => {
           const num = Number(
-            txt
-              .replace(/\s+/g, "")
-              .replace(/€/g, "")
-              .replace(",", ".")
+            txt.replace(/\s+/g, "").replace(/€/g, "").replace(",", ".")
           );
           if (!Number.isNaN(num)) {
             setTxt(
-              suffix
-                ? `${num.toLocaleString("sk-SK")}${suffix}`
-                : String(num)
+              suffix ? `${num.toLocaleString("sk-SK")}${suffix}` : String(num)
             );
           }
         }}
