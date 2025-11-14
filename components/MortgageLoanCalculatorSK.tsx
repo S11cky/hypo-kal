@@ -20,7 +20,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Info } from "lucide-react";
 
-// Limity a sadzby
+// Limity a predvyplnené sadzby
 const LIMITS = {
   hypo: {
     amount: { min: 5000, max: 600000, step: 1000 },
@@ -69,31 +69,45 @@ const ASSETS = [
   { id: "saudi", name: "Saudi Aramco", cagr: 5 },
 ] as const;
 
-// Helpery, výpočty
-function pctToMonthly(pct: number) { const r = (Number(pct) || 0) / 100; return r / 12; }
+function pctToMonthly(pct: number) {
+  const r = (Number(pct) || 0) / 100;
+  return r / 12;
+}
+
 function annuityPayment(P: number, nominalAnnualPct: number, months: number) {
   const i = pctToMonthly(nominalAnnualPct);
   if (months <= 0 || P <= 0) return 0;
   if (i === 0) return P / months;
   return (P * i) / (1 - Math.pow(1 + i, -months));
 }
+
 function realMonthlyRate(nominalAnnualPct: number, inflationAnnualPct: number) {
   const iN = pctToMonthly(nominalAnnualPct);
   const iF = pctToMonthly(inflationAnnualPct);
   return (1 + iN) / (1 + iF) - 1;
 }
+
 function presentValueOfAnnuity(payment: number, r: number, n: number) {
   if (n <= 0) return 0;
   if (Math.abs(r) < 1e-12) return payment * n;
   return (payment * (1 - Math.pow(1 + r, -n))) / r;
 }
+
 function fmtMoney(x: number) {
   if (!isFinite(x)) return "–";
-  return x.toLocaleString("sk-SK", { style: "currency", currency: "EUR", maximumFractionDigits: 2 });
+  return x.toLocaleString("sk-SK", {
+    style: "currency",
+    currency: "EUR",
+    maximumFractionDigits: 2,
+  });
 }
+
 function fmtPct(x: number) {
-  return `${(Number(x) || 0).toLocaleString("sk-SK", { maximumFractionDigits: 2 })}%`;
+  return `${(Number(x) || 0).toLocaleString("sk-SK", {
+    maximumFractionDigits: 2,
+  })}%`;
 }
+
 function fvLumpSum(P: number, annualPct: number, years: number) {
   return P * Math.pow(1 + (annualPct || 0) / 100, years);
 }
@@ -101,6 +115,7 @@ function fvLumpSum(P: number, annualPct: number, years: number) {
 export default function MortgageLoanCalculatorSK() {
   const [tab, setTab] = useState<"hypo" | "nehypo">("hypo");
   const [banks, setBanks] = useState(DEMO_BANKS);
+
   const [amount, setAmount] = useState(180000);
   const [years, setYears] = useState(30);
   const [inflationPct, setInflationPct] = useState(2.5);
@@ -112,7 +127,9 @@ export default function MortgageLoanCalculatorSK() {
   const defaultAsset = ASSETS.find((a) => a.id === assetId)!;
   const [assetReturnPct, setAssetReturnPct] = useState<number>(defaultAsset.cagr);
 
-  React.useEffect(() => { setAssetReturnPct(ASSETS.find((a) => a.id === assetId)?.cagr ?? 8); }, [assetId]);
+  React.useEffect(() => {
+    setAssetReturnPct(ASSETS.find((a) => a.id === assetId)?.cagr ?? 8);
+  }, [assetId]);
 
   const A_LIMIT = LIMITS[tab].amount;
   const Y_LIMIT = LIMITS[tab].years;
@@ -120,7 +137,11 @@ export default function MortgageLoanCalculatorSK() {
   const validatedAmount = Math.min(Math.max(amount, A_LIMIT.min), A_LIMIT.max);
   const validatedYears = Math.min(Math.max(years, Y_LIMIT.min), Y_LIMIT.max);
 
-  const months = useMemo(() => Math.max(1, Math.round((Number(validatedYears) || 0) * 12)), [validatedYears]);
+  const months = useMemo(
+    () => Math.max(1, Math.round((Number(validatedYears) || 0) * 12)),
+    [validatedYears]
+  );
+
   const bankList = banks[tab];
   const selectedBankObj = bankList.find((b) => b.id === selectedBank);
 
@@ -135,16 +156,27 @@ export default function MortgageLoanCalculatorSK() {
 
   const effectiveRate = useCustomRate ? Number(customRate) || 0 : Number(selectedBankObj?.rate) || 0;
 
-  const monthly = useMemo(() => annuityPayment(Number(validatedAmount) || 0, effectiveRate, months), [validatedAmount, effectiveRate, months]);
+  const monthly = useMemo(
+    () => annuityPayment(Number(validatedAmount) || 0, effectiveRate, months),
+    [validatedAmount, effectiveRate, months]
+  );
+
   const totalPaid = useMemo(() => monthly * months, [monthly, months]);
-  const totalInterest = useMemo(() => totalPaid - (Number(validatedAmount) || 0), [totalPaid, validatedAmount]);
+  const totalInterest = useMemo(() => totalPaid - Number(validatedAmount), [totalPaid, validatedAmount]);
+
   const rRealMonthly = useMemo(() => realMonthlyRate(effectiveRate, Number(inflationPct) || 0), [effectiveRate, inflationPct]);
-  const pvOfPayments = useMemo(() => presentValueOfAnnuity(monthly, rRealMonthly, months), [monthly, rRealMonthly, months]);
-  const realOverpayment = useMemo(() => pvOfPayments - (Number(validatedAmount) || 0), [pvOfPayments, validatedAmount]);
+
+  const pvOfPayments = useMemo(
+    () => presentValueOfAnnuity(monthly, rRealMonthly, months),
+    [monthly, rRealMonthly, months]
+  );
+
+  const realOverpayment = useMemo(() => pvOfPayments - Number(validatedAmount), [pvOfPayments, validatedAmount]);
+
   const handleBankRateChange = (id: string, val: string) => {
     setBanks((prev) => ({
       ...prev,
-      [tab]: prev[tab].map((b) => b.id === id ? { ...b, rate: Number(val) } : b),
+      [tab]: prev[tab].map((b) => (b.id === id ? { ...b, rate: Number(val) } : b)),
     }));
   };
 
@@ -154,24 +186,21 @@ export default function MortgageLoanCalculatorSK() {
     if (validatedAmount > 0 && validatedYears > 0) {
       const r = Math.pow(totalPaid / validatedAmount, 1 / validatedYears) - 1;
       return r * 100;
-    } return 0;
+    }
+    return 0;
   }, [validatedAmount, validatedYears, totalPaid]);
 
   return (
     <div className="mx-2 sm:mx-auto max-w-5xl p-3 sm:p-4 md:p-8 space-y-6">
       <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold leading-tight">
-          Kalkulátor hypotéky & úveru (SK)
-        </h1>
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold leading-tight">Kalkulátor hypotéky & úveru (SK)</h1>
         <div className="flex items-start gap-2 text-xs sm:text-sm text-muted-foreground max-w-xs sm:max-w-md">
           <Info className="h-4 w-4 mt-1 hidden sm:block" />
-          <span className="whitespace-normal">
-            Vyber banku alebo používaj vlastnú sadzbu. Posuvníky sú rýchlejšie, polia sa pri kliku vyprázdnia.
-          </span>
+          <span className="whitespace-normal">Vyber banku alebo používaj vlastnú sadzbu. Posuvníky sú rýchlejšie, polia sa pri kliku vyprázdnia.</span>
         </div>
       </div>
 
-      <Tabs value={tab} onValueChange={setTab} className="w-full">
+      <Tabs value={tab} onValueChange={(value: string) => { if (value === "hypo" || value === "nehypo") setTab(value); }} className="w-full">
         <TabsList className="grid grid-cols-1 gap-2 sm:grid-cols-2 w-full mt-4">
           <TabsTrigger
             value="hypo"
@@ -215,6 +244,7 @@ export default function MortgageLoanCalculatorSK() {
             onSelectBank={onSelectBank}
           />
         </TabsContent>
+
         <TabsContent value="nehypo">
           <CalculatorCard
             title="Nehypotekárny (spotrebný) úver"
@@ -245,19 +275,138 @@ export default function MortgageLoanCalculatorSK() {
         </TabsContent>
       </Tabs>
 
-      {/* Investičná sekcia... */}
-      {/* ...ostatok kódu - tu nemením, len mením tvoj stav z "hypotekarny/nehypotekarny" na "hypo/nehypo" */}
+      {/* Investičná sekcia */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Investičná hypotéza: investujem celú istinu do akcií</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid gap-2">
+              <Label className="whitespace-normal">Aktívum</Label>
+              <Select
+                value={assetId}
+                onValueChange={(v) => setAssetId(v as typeof ASSETS[number]["id"])}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {ASSETS.map((a) => (
+                    <SelectItem key={a.id} value={a.id}>
+                      {a.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label className="whitespace-normal">Očak. výnos p.a. (CAGR)</Label>
+              <EditableNumber
+                value={assetReturnPct}
+                onChangeNumber={setAssetReturnPct}
+                clearOnFocus
+                inputClassName="h-11 text-base px-3 py-2"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label className="whitespace-normal">Break-even CAGR</Label>
+              <div className="rounded-2xl bg-muted/30 p-3 text-lg font-semibold break-words">
+                {fmtPct(breakEvenCAGR)}
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 overflow-x-auto">
+            <Stat label="Istina investovaná" value={fmtMoney(validatedAmount)} />
+            <Stat label="FV investície po splatení" value={fmtMoney(investFV)} />
+            <Stat label="Zaplatené na úvere" value={fmtMoney(totalPaid)} />
+            <Stat label={investNet >= 0 ? "Čistý zisk" : "Čistá strata"} value={fmtMoney(investNet)} />
+          </div>
+          <div className="text-xs text-muted-foreground">
+            * CAGR sú ilustračné a nie sú investičným odporúčaním. Úvahy nezohľadňujú dane, poplatky ani riziko volatility.
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* Všetky ďalšie podkomponenty ostávajú nezmenené */}
-      {/* ... */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Metodika pre infláciu</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground space-y-2">
+          <p className="whitespace-normal">
+            Reálne hodnoty rátame pomocou Fisherovej aproximácie na mesačnej báze a diskontujeme PV splátok.
+          </p>
+        </CardContent>
+      </Card>
     </div>
   );
 }
 
-// Vlož svoju komponentu CalculatorCard podľa pôvodného kódu
-// Ostatné podkomponenty – EditableNumber, Stat – tiež bežia bez zmeny
+type EditableNumberProps = {
+  value: number;
+  onChangeNumber: (v: number) => void;
+  suffix?: string;
+  clearOnFocus?: boolean;
+  inputClassName?: string;
+};
 
-// Základ je prepínanie stavu `tab`, ktorý je všade "hypo"/"nehypo". 
-// Práve v tom je najčastejšia chyba, že je rozsekaný stav medzi "hypotekarny", "nehypotekarny" vs "hypo", "nehypo".
+function EditableNumber({
+  value,
+  onChangeNumber,
+  suffix,
+  clearOnFocus = false,
+  inputClassName = "",
+}: EditableNumberProps) {
+  const [txt, setTxt] = React.useState<string>(String(value));
 
-// Tento kód je plne funkčný na mobile aj desktop — stačí copy-paste.
+  React.useEffect(() => {
+    setTxt(String(value));
+  }, [value]);
+
+  return (
+    <div className="flex items-center gap-2 w-full">
+      <Input
+        className={`${inputClassName} text-base sm:text-lg px-3 py-2`}
+        value={txt}
+        onFocus={(e) => {
+          if (clearOnFocus) {
+            setTxt("");
+          } else {
+            (e.target as HTMLInputElement).select();
+          }
+        }}
+        onChange={(e) => {
+          const v = e.target.value;
+          setTxt(v);
+          const num = Number(
+            v.replace(/\s+/g, "").replace(/€/g, "").replace(",", ".")
+          );
+          if (!Number.isNaN(num)) onChangeNumber(num);
+        }}
+        onBlur={() => {
+          const num = Number(
+            txt.replace(/\s+/g, "").replace(/€/g, "").replace(",", ".")
+          );
+          if (!Number.isNaN(num)) {
+            setTxt(suffix ? `${num.toLocaleString("sk-SK")}${suffix}` : String(num));
+          }
+        }}
+        placeholder={suffix ? `napr. 10 000${suffix}` : ""}
+      />
+    </div>
+  );
+}
+
+type StatProps = {
+  label: string;
+  value: string;
+};
+
+function Stat({ label, value }: StatProps) {
+  return (
+    <div className="rounded-2xl bg-muted/30 p-3 break-words min-w-[120px]">
+      <div className="text-xs text-muted-foreground whitespace-normal">{label}</div>
+      <div className="text-base sm:text-lg font-semibold">{value}</div>
+    </div>
+  );
+}
